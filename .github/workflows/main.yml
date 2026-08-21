@@ -17,18 +17,23 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Unzip and Setup Wrapper
+    - name: Clean and Build APK
       run: |
-        unzip -q MalpurPanchayatApp_v2.zip -d ./unzipped
-        PROJECT_DIR=$(find ./unzipped -name "build.gradle" -exec dirname {} \; | head -n 1)
-        cd "$PROJECT_DIR"
-        gradle wrapper --gradle-version 8.0 --distribution-type bin
-        chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon --stacktrace
+        # यहाँ हम प्रोजेक्ट के अंदर छिपी हुई सभी फाइलों को ढूंढकर उसे सही से बिल्ड करेंगे
+        # यह किसी भी फोल्डर स्ट्रक्चर में काम करेगा
+        find . -maxdepth 3 -name "gradlew" -exec chmod +x {} \;
+        
+        # अगर gradlew नहीं मिला, तो हम डायरेक्ट Gradle रन करेंगे
+        if [ -f "gradlew" ]; then
+          ./gradlew assembleDebug --no-daemon
+        else
+          gradle assembleDebug --no-daemon
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        path: unzipped/**/build/outputs/apk/debug/*.apk
-        
+        name: MalpurPanchayatApp-Final
+        path: |
+          **/build/outputs/apk/debug/*.apk
+          **/app/build/outputs/apk/debug/*.apk
