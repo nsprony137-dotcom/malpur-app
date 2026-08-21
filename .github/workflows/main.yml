@@ -21,13 +21,11 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-
-    - name: Build APK with Gradle Wrapper
+    - name: Build APK
       run: |
         cd project/MalpurPanchayatApp
-        gradle assembleDebug --warning-mode none --stacktrace
+        gradle wrapper --gradle-version 7.5
+        ./gradlew assembleDebug --warning-mode none
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
