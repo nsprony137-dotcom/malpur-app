@@ -17,17 +17,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Clean and Build APK
+    - name: Find and Build APK
       run: |
-        # यहाँ हम प्रोजेक्ट के अंदर छिपी हुई सभी फाइलों को ढूंढकर उसे सही से बिल्ड करेंगे
-        # यह किसी भी फोल्डर स्ट्रक्चर में काम करेगा
-        find . -maxdepth 3 -name "gradlew" -exec chmod +x {} \;
+        # यह कमांड अपने आप ढूंढ लेगी कि build.gradle फ़ाइल किस फोल्डर के अंदर है और वहीं से APK बना देगी
+        PROJECT_DIR=$(find . -name "build.gradle" -not -path "*/.*" -exec dirname {} \; | head -n 1)
+        echo "Found project in: $PROJECT_DIR"
+        cd "$PROJECT_DIR"
         
-        # अगर gradlew नहीं मिला, तो हम डायरेक्ट Gradle रन करेंगे
         if [ -f "gradlew" ]; then
+          chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
         else
-          gradle assembleDebug --no-daemon
+          gradle wrapper --gradle-version 8.0
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
         fi
 
     - name: Upload APK
@@ -36,4 +39,3 @@ jobs:
         name: MalpurPanchayatApp-Final
         path: |
           **/build/outputs/apk/debug/*.apk
-          **/app/build/outputs/apk/debug/*.apk
