@@ -17,25 +17,17 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Find and Build APK
+    - name: Build with Gradle
       run: |
-        # यह कमांड अपने आप ढूंढ लेगी कि build.gradle फ़ाइल किस फोल्डर के अंदर है और वहीं से APK बना देगी
-        PROJECT_DIR=$(find . -name "build.gradle" -not -path "*/.*" -exec dirname {} \; | head -n 1)
-        echo "Found project in: $PROJECT_DIR"
-        cd "$PROJECT_DIR"
-        
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-        else
+        # यदि gradlew फाइल नहीं है, तो अपने आप रैपर जनरेट करेगा
+        if [ ! -f "gradlew" ]; then
           gradle wrapper --gradle-version 8.0
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
         fi
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: MalpurPanchayatApp-Final
-        path: |
-          **/build/outputs/apk/debug/*.apk
+        name: app-debug
+        path: app/build/outputs/apk/debug/*.apk
